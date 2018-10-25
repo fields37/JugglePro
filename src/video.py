@@ -52,21 +52,20 @@ def scan():
     }
 
     colorcal = {}  # color calibration dictionary
-    color = ['ball1', 'ball2', 'ball3']  # list of valid colors            
+    color = ['ball1', 'ball2', 'ball3']  # list of valid colors
+    line_color = ['']
 
-    cv2.namedWindow('default', 0)
     cv2.resizeWindow('default', 1000, 1000)
-    cv2.namedWindow('hsv', 0)
     # create trackbars here
-    cv2.createTrackbar('H Upper', "default", defaultcal[color[len(colorcal)]][0][0], 179, empty_callback)
-    cv2.createTrackbar('H Lower', "default", defaultcal[color[len(colorcal)]][1][0], 179, empty_callback)
-    cv2.createTrackbar('S Upper', "default", defaultcal[color[len(colorcal)]][0][1], 255, empty_callback)
-    cv2.createTrackbar('S Lower', "default", defaultcal[color[len(colorcal)]][1][1], 255, empty_callback)
-    cv2.createTrackbar('V Upper', "default", defaultcal[color[len(colorcal)]][0][2], 255, empty_callback)
-    cv2.createTrackbar('V Lower', "default", defaultcal[color[len(colorcal)]][1][2], 255, empty_callback)
+    cv2.createTrackbar('H Upper', "tool", defaultcal[color[len(colorcal)]][0][0], 179, empty_callback)
+    cv2.createTrackbar('H Lower', "tool", defaultcal[color[len(colorcal)]][1][0], 179, empty_callback)
+    cv2.createTrackbar('S Upper', "tool", defaultcal[color[len(colorcal)]][0][1], 255, empty_callback)
+    cv2.createTrackbar('S Lower', "tool", defaultcal[color[len(colorcal)]][1][1], 255, empty_callback)
+    cv2.createTrackbar('V Upper', "tool", defaultcal[color[len(colorcal)]][0][2], 255, empty_callback)
+    cv2.createTrackbar('V Lower', "tool", defaultcal[color[len(colorcal)]][1][2], 255, empty_callback)
 
-    cv2.createTrackbar('Max Ball Size', "default", 2000, 2000, empty_callback)
-    cv2.createTrackbar('Min Ball Size', "default", 500, 2000, empty_callback)
+    cv2.createTrackbar('Max Ball Size', "tool", 2000, 2000, empty_callback)
+    cv2.createTrackbar('Min Ball Size', "tool", 500, 2000, empty_callback)
 
     # Remember that the range for S and V are not 0 to 179
     # make four more trackbars for ('S Upper', 'S Lower', 'V Upper', 'V Lower')
@@ -85,8 +84,8 @@ def scan():
             break
 
         # get area constraints
-        max_size = cv2.getTrackbarPos('Max Ball Size', 'default')
-        min_size = cv2.getTrackbarPos('Min Ball Size', 'default')
+        max_size = cv2.getTrackbarPos('Max Ball Size', 'tool')
+        min_size = cv2.getTrackbarPos('Min Ball Size', 'tool')
 
         for name in color:
             trajectory_index = color.index(name)
@@ -133,7 +132,6 @@ def scan():
                              3)
 
         # show result
-        cv2.imshow("hsv", hsv)
         cv2.imshow("default", frame)
 
         if key == 99:
@@ -145,14 +143,14 @@ def scan():
                 key = cv2.waitKey(10) & 0xff
 
                 # hue upper lower
-                hu = cv2.getTrackbarPos('H Upper', 'default')
-                hl = cv2.getTrackbarPos('H Lower', 'default')
+                hu = cv2.getTrackbarPos('H Upper', 'tool')
+                hl = cv2.getTrackbarPos('H Lower', 'tool')
                 # saturation upper lower
-                su = cv2.getTrackbarPos('S Upper', 'default')
-                sl = cv2.getTrackbarPos('S Lower', 'default')
+                su = cv2.getTrackbarPos('S Upper', 'tool')
+                sl = cv2.getTrackbarPos('S Lower', 'tool')
                 # value upper lower
-                vu = cv2.getTrackbarPos('V Upper', 'default')
-                vl = cv2.getTrackbarPos('V Lower', 'default')
+                vu = cv2.getTrackbarPos('V Upper', 'tool')
+                vl = cv2.getTrackbarPos('V Lower', 'tool')
 
                 lower_hsv = np.array([hl, sl, vl])
                 upper_hsv = np.array([hu, su, vu])
@@ -166,12 +164,12 @@ def scan():
                     colorcal[color[len(colorcal)]] = [upper_hsv, lower_hsv]
 
                     if (len(colorcal) < len(defaultcal)):
-                        cv2.setTrackbarPos('H Upper', 'default', defaultcal[color[len(colorcal)]][0][0])
-                        cv2.setTrackbarPos('S Upper', 'default', defaultcal[color[len(colorcal)]][0][1])
-                        cv2.setTrackbarPos('V Upper', 'default', defaultcal[color[len(colorcal)]][0][2])
-                        cv2.setTrackbarPos('H Lower', 'default', defaultcal[color[len(colorcal)]][1][0])
-                        cv2.setTrackbarPos('S Lower', 'default', defaultcal[color[len(colorcal)]][1][1])
-                        cv2.setTrackbarPos('V Lower', 'default', defaultcal[color[len(colorcal)]][1][2])
+                        cv2.setTrackbarPos('H Upper', 'tool', defaultcal[color[len(colorcal)]][0][0])
+                        cv2.setTrackbarPos('S Upper', 'tool', defaultcal[color[len(colorcal)]][0][1])
+                        cv2.setTrackbarPos('V Upper', 'tool', defaultcal[color[len(colorcal)]][0][2])
+                        cv2.setTrackbarPos('H Lower', 'tool', defaultcal[color[len(colorcal)]][1][0])
+                        cv2.setTrackbarPos('S Lower', 'tool', defaultcal[color[len(colorcal)]][1][1])
+                        cv2.setTrackbarPos('V Lower', 'tool', defaultcal[color[len(colorcal)]][1][2])
 
                 if (len(colorcal) < len(defaultcal)):
                     text = 'calibrating {}'.format(color[len(colorcal)])
@@ -186,4 +184,7 @@ def scan():
     cv2.destroyAllWindows()
 
 
-scan()
+if __name__ == '__main__':
+    cv2.namedWindow('default', cv2.WINDOW_NORMAL)
+    cv2.namedWindow('tool', cv2.WINDOW_NORMAL)
+    scan()
