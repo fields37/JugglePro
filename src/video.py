@@ -20,59 +20,10 @@ cameratesting = False
 '''
 Initialize the camera here
 '''
-cam_port         = 1 # your code here task 1.1
+cam_port         = 0 # your code here task 1.1
 cam              = cv2.VideoCapture(cam_port) # your code here task 1.1
 
 
-
-"""
-    We are going to want to draw some stickers. In the solution
-    we have 3 sets of stickers. Each set has 9 stickers to represent
-    each sticker on any given face of the rubik's cube.
-
-    The 'stickers' set of stickers are physical markers used to help the
-    user see where to place the cube for color scanning.
-
-    The 'current_stickers' set show which colors are currently being detected 
-    for each position on the face.
-
-    The 'preview_stickers' set shows the most recently recorded face.
-    You can rescan a face if the preview does not match the actual colors
-    on the face of the rubik's cube.
-
-    These are the coordinates of each sticker for each set. Feel free to play
-    with these values if you don't like the sticker placement.
-
-    *note shorten split
-"""
-detector_stickers = [[200, 120], [300, 120], [400, 120],
-                   [200, 220], [300, 220], [400, 220],
-                   [200, 320], [300, 320], [400, 320]]
-
-current_stickers = [[20, 20], [54, 20], [88, 20],
-                   [20, 54], [54, 54], [88, 54],
-                   [20, 88], [54, 88], [88, 88]]
-
-recorded_stickers = [[20, 130], [54, 130], [88, 130],
-                   [20, 164], [54, 164], [88, 164],
-                   [20, 198], [54, 198], [88, 198]]
-
-
-
-def color_to_notation(color):
-    """
-    Helper function for converting colors to notation
-    used by solver.
-    """
-    notation = {
-        'green'  : 'F',
-        'white'  : 'U',
-        'blue'   : 'B',
-        'red'    : 'R',
-        'orange' : 'L',
-        'yellow' : 'D'
-    }
-    return notation[color]
 
 def empty_callback(x):
     '''
@@ -93,14 +44,6 @@ def scan():
     :returns: dictionary
     """
 
-    sides   = {}                            # collection of scanned sides
-    preview = ['white','white','white',     # default starting preview sticker colors
-               'white','white','white',
-               'white','white','white']
-    state   = [0,0,0,                       # current sticker colors
-               0,0,0,
-               0,0,0]
-
     defaultcal = {                          # default color calibration
                 'ball1':[[34,255,255],[17,0,0]],
                 }
@@ -109,6 +52,8 @@ def scan():
     color = ['ball1']  # list of valid colors            
     
     cv2.namedWindow('default',0)
+    cv2.resizeWindow('default', 1000, 1000)
+    cv2.namedWindow('hsv', 0)
     # create trackbars here
     cv2.createTrackbar('H Upper',"default",defaultcal[color[len(colorcal)]][0][0],179, empty_callback)
     cv2.createTrackbar('H Lower',"default",defaultcal[color[len(colorcal)]][1][0],179, empty_callback)
@@ -202,20 +147,6 @@ def scan():
         key = cv2.waitKey(10)
 
 
-        for index,(x,y) in enumerate(detector_stickers):
-            roi          = hsv[y:y+32, x:x+32]              # extracts hsv values within sticker
-            avg_hsv      = ColorDetector.median_hsv(roi)    # filters the hsv values into one hsv
-            color_name   = ColorDetector.get_color_name(avg_hsv,colorcal) # extracts the color based on hsv
-            state[index] = color_name                       # stores the color 
-
-            # update when space bar is pressed.
-            if key == 32:
-                preview = list(state)
-                face = color_to_notation(state[4])          # convert the color to notation of the middle sticker and label this as the face
-                notation = [color_to_notation(color) for color in state] # convert all colors to notation
-                sides[face] = notation                      # update the face in the sides dictionary
-
-
         # quit on escape.
         if key == 27:
             break
@@ -259,8 +190,8 @@ def scan():
 
 
         # show result
+        cv2.imshow("hsv", hsv)
         cv2.imshow("default", frame)
-
 
 
         if key == 99: 
@@ -314,4 +245,4 @@ def scan():
     cv2.destroyAllWindows()
     return sides if len(sides) == 6 else False
 
-
+scan()
