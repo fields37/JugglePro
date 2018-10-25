@@ -72,7 +72,7 @@ def scan():
     # make four more trackbars for ('S Upper', 'S Lower', 'V Upper', 'V Lower')
     # Note you should use these trackbar names to make other parts of the code run properly
 
-    trajectory = []
+    trajectory = [[] for _ in color]
 
     while True:
         _, frame = cam.read()
@@ -89,7 +89,7 @@ def scan():
         min_size = cv2.getTrackbarPos('Min Ball Size', 'default')
 
         for name in color:
-
+            trajectory_index = color.index(name)
             # find current ball color
             upper_hsv = np.array(defaultcal[name][0])
             lower_hsv = np.array(defaultcal[name][1])
@@ -112,20 +112,25 @@ def scan():
                         max_contour_size = len(contour)
 
             # fit that ellipse!
-            shape = cv2.fitEllipse(max_contour)
+            if max_contour is not None:
+                shape = cv2.fitEllipse(max_contour)
 
-            # draw some stuff!
-            cv2.drawContours(frame, [max_contour], 0, (0, 255, 0), 3)
-            cv2.ellipse(frame, shape, (0, 255, 255), 2, 8)
-            point = int(shape[0][0]), int(shape[0][1])
-            if len(trajectory) == 1000:
-                trajectory = trajectory[1:] + [point]
-            else:
-                trajectory.append(point)
+                # draw some stuff!
+                cv2.drawContours(frame, [max_contour], 0, (0, 255, 0), 3)
+                cv2.ellipse(frame, shape, (0, 255, 255), 2, 8)
+                point = int(shape[0][0]), int(shape[0][1])
+                if len(trajectory[trajectory_index]) == 50:
+                    trajectory[trajectory_index] = trajectory[trajectory_index][1:] + [point]
+                else:
+                    trajectory[trajectory_index].append(point)
 
-            # draws trajectory
-            for i in range(len(trajectory) - 1):
-                cv2.line(frame, trajectory[i], trajectory[i + 1], (255, 255, 255), 3)
+                # draws trajectory
+                for i in range(len(trajectory[trajectory_index]) - 1):
+                    cv2.line(frame,
+                             trajectory[trajectory_index][i],
+                             trajectory[trajectory_index][i + 1],
+                             (255, 255, 255),
+                             3)
 
         # show result
         cv2.imshow("hsv", hsv)
