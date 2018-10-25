@@ -45,11 +45,13 @@ def scan():
     """
 
     defaultcal = {                          # default color calibration
-                'ball1':[[34,255,255],[17,0,0]],
+                'ball1':[[179,255,255],[154,99,135]],
+                'ball2':[[138,255,255],[72,23,142]],
+                'ball3':[[18,255,255],[0,108,186]]
                 }
 
     colorcal  = {}                          # color calibration dictionary
-    color = ['ball1']  # list of valid colors            
+    color = ['ball1', 'ball2', 'ball3']  # list of valid colors            
     
     cv2.namedWindow('default',0)
     cv2.resizeWindow('default', 1000, 1000)
@@ -152,40 +154,45 @@ def scan():
             break
 
 
-        # find current ball color
-        upper_hsv = np.array(defaultcal['ball1'][0])
-        lower_hsv = np.array(defaultcal['ball1'][1])
-
-        # make a mask with current ball color
-        mask = cv2.inRange(hsv, lower_hsv, upper_hsv) # makes a mask where pixels with hsv in bounds
-        res = cv2.bitwise_and(frame,frame, mask= mask)
-
-        # convert masked image to grayscale, run thresholding and contour detection
-        imgray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
-        reset, thresh = cv2.threshold(imgray, 127, 255, 0)
-        im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
         # get area constraints
         max_size = cv2.getTrackbarPos('Max Ball Size','default')
         min_size = cv2.getTrackbarPos('Min Ball Size','default')
 
-        culled_contours = []
-        for contour in contours:
-            if max_size > len(contour) > min_size:
-                culled_contours.append(contour)
+
+        for name in color:
+
+            # find current ball color
+            upper_hsv = np.array(defaultcal[name][0])
+            lower_hsv = np.array(defaultcal[name][1])
+
+            # make a mask with current ball color
+            mask = cv2.inRange(hsv, lower_hsv, upper_hsv) # makes a mask where pixels with hsv in bounds
+            res = cv2.bitwise_and(frame,frame, mask= mask)
+
+            # convert masked image to grayscale, run thresholding and contour detection
+            imgray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
+            reset, thresh = cv2.threshold(imgray, 127, 255, 0)
+            im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+            culled_contours = []
+            for contour in contours:
+                if max_size > len(contour) > min_size:
+                    culled_contours.append(contour)
+
+            # draw some ellipses and contours
+            for i in range(len(culled_contours)):
+                contour = culled_contours[i]
+
+                # fit that ellipse!
+                shape = cv2.fitEllipse(contour)
+
+                # draw some stuff!
+                cv2.drawContours(frame, culled_contours, i, (0,255,0), 3)
+                cv2.ellipse(frame, shape, (0,255,255), 2, 8)
 
         
 
-        # draw some ellipses and contours
-        for i in range(len(culled_contours)):
-            contour = culled_contours[i]
-
-            # fit that ellipse!
-            shape = cv2.fitEllipse(contour)
-
-            # draw some stuff!
-            cv2.drawContours(frame, culled_contours, i, (0,255,0), 3)
-            cv2.ellipse(frame, shape, (0,255,255), 2, 8)
+        
 
 
 
