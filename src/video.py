@@ -7,7 +7,11 @@ from sys import exit as Die
 try:
     import sys
     import cv2
+    import time
+    import imutils
     import numpy as np
+    from imutils.video import WebcamVideoStream
+    from imutils.video import FPS
     from colordetection import ColorDetector
 except ImportError as err:
     Die(err)
@@ -21,8 +25,9 @@ cameratesting = False
 '''
 Initialize the camera here
 '''
-cam_port = 0  # your code here task 1.1
-cam = cv2.VideoCapture(cam_port)  # your code here task 1.1
+cam_port = 0
+cam = WebcamVideoStream(src=cam_port).start()
+fps = FPS().start()
 
 
 def empty_callback(x):
@@ -74,7 +79,7 @@ def scan():
     trajectory = [[] for _ in color]
 
     while True:
-        _, frame = cam.read()
+        frame = cam.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # generates an hsv version of frame and
         # stores it in the hsv image variable
         key = cv2.waitKey(10)
@@ -85,7 +90,7 @@ def scan():
 
         # get area constraints
         max_size = cv2.getTrackbarPos('Max Ball Size', 'tool')
-        min_size = cv2.getTrackbarPos('Min Ball Size', 'tool')
+        min_size = cv2.getTrackbarPos('Min Ball Size', 'tool') + 5
 
         for name in color:
             trajectory_index = color.index(name)
@@ -133,11 +138,12 @@ def scan():
 
         # show result
         cv2.imshow("default", frame)
+        fps.update()
 
         if key == 99:
             colorcal = {}
             while len(colorcal) < len(defaultcal):
-                _, frame = cam.read()
+                frame = cam.read()
 
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
                 key = cv2.waitKey(10) & 0xff
@@ -180,8 +186,11 @@ def scan():
                 if key == 27:
                     break
 
-    cam.release()
+    fps.stop()
+    print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
+    print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
     cv2.destroyAllWindows()
+    cam.stop()
 
 
 if __name__ == '__main__':
