@@ -82,7 +82,7 @@ def scan():
         frame = cam.read()
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # generates an hsv version of frame and
         # stores it in the hsv image variable
-        key = cv2.waitKey(10)
+        key = cv2.waitKey(1) & 0xff
 
         # quit on escape.
         if key == 27:
@@ -142,11 +142,18 @@ def scan():
 
         if key == 99:
             colorcal = {}
+            cv2.setTrackbarPos('H Upper', 'tool', defaultcal[color[len(colorcal)]][0][0])
+            cv2.setTrackbarPos('S Upper', 'tool', defaultcal[color[len(colorcal)]][0][1])
+            cv2.setTrackbarPos('V Upper', 'tool', defaultcal[color[len(colorcal)]][0][2])
+            cv2.setTrackbarPos('H Lower', 'tool', defaultcal[color[len(colorcal)]][1][0])
+            cv2.setTrackbarPos('S Lower', 'tool', defaultcal[color[len(colorcal)]][1][1])
+            cv2.setTrackbarPos('V Lower', 'tool', defaultcal[color[len(colorcal)]][1][2])
+
             while len(colorcal) < len(defaultcal):
                 frame = cam.read()
 
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                key = cv2.waitKey(10) & 0xff
+                key = cv2.waitKey(1) & 0xff
 
                 # hue upper lower
                 hu = cv2.getTrackbarPos('H Upper', 'tool')
@@ -169,7 +176,7 @@ def scan():
                     defaultcal[color[len(colorcal)]] = [upper_hsv, lower_hsv]
                     colorcal[color[len(colorcal)]] = [upper_hsv, lower_hsv]
 
-                    if (len(colorcal) < len(defaultcal)):
+                    if len(colorcal) < len(defaultcal):
                         cv2.setTrackbarPos('H Upper', 'tool', defaultcal[color[len(colorcal)]][0][0])
                         cv2.setTrackbarPos('S Upper', 'tool', defaultcal[color[len(colorcal)]][0][1])
                         cv2.setTrackbarPos('V Upper', 'tool', defaultcal[color[len(colorcal)]][0][2])
@@ -177,7 +184,7 @@ def scan():
                         cv2.setTrackbarPos('S Lower', 'tool', defaultcal[color[len(colorcal)]][1][1])
                         cv2.setTrackbarPos('V Lower', 'tool', defaultcal[color[len(colorcal)]][1][2])
 
-                if (len(colorcal) < len(defaultcal)):
+                if len(colorcal) < len(defaultcal):
                     text = 'calibrating {}'.format(color[len(colorcal)])
                 cv2.putText(res, text, (20, 460), cv2.FONT_HERSHEY_TRIPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
 
