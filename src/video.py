@@ -13,6 +13,8 @@ try:
     from imutils.video import WebcamVideoStream
     from imutils.video import FPS
     from colordetection import ColorDetector
+    import os
+    import pickle
 except ImportError as err:
     Die(err)
 
@@ -28,6 +30,8 @@ Initialize the camera here
 cam_port = 0
 cam = WebcamVideoStream(src=cam_port).start()
 fps = FPS().start()
+calibrationfile = "calibration.txt"
+num_data_points = 15
 
 
 def empty_callback(x):
@@ -49,12 +53,21 @@ def scan():
 
     :returns: dictionary
     """
-
-    defaultcal = {  # default color calibration
-        'ball1': [[175, 230, 255], [155, 130, 100]],
-        'ball2': [[102, 255, 255], [94, 75, 130]],
-        'ball3': [[94, 255, 254], [75, 135, 0]]
-    }
+    # Read the calibration values from file
+    if os.path.exists(calibrationfile):
+        file = open(calibrationfile, "rb")
+        defaultcal = pickle.load(file)
+        file.close()
+    # If no calibration file exists, create it and use the default values
+    else:
+        defaultcal = {  # default color calibration
+            'ball1': [[175, 230, 255], [155, 130, 100]],
+            'ball2': [[102, 255, 255], [94, 75, 130]],
+            'ball3': [[94, 255, 254], [75, 135, 0]]
+        }
+        file = open(calibrationfile, "wb")
+        pickle.dump(defaultcal, file)
+        file.close()
 
     colorcal = {}  # color calibration dictionary
     color = ['ball1', 'ball2', 'ball3']  # list of valid colors
@@ -70,7 +83,7 @@ def scan():
     cv2.createTrackbar('V Lower', "tool", defaultcal[color[len(colorcal)]][1][2], 255, empty_callback)
 
     cv2.createTrackbar('Max Ball Size', "tool", 2000, 2000, empty_callback)
-    cv2.createTrackbar('Min Ball Size', "tool", 120, 2000, empty_callback)
+    cv2.createTrackbar('Min Ball Size', "tool", 50, 2000, empty_callback)
 
     # Remember that the range for S and V are not 0 to 179
     # make four more trackbars for ('S Upper', 'S Lower', 'V Upper', 'V Lower')
@@ -106,7 +119,7 @@ def scan():
 
             # convert masked image to grayscale, run thresholding and contour detection
             imgray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
-            reset, thresh = cv2.threshold(imgray, 127, 255, 0)
+            reset, thresh = cv2.threshold(imgray, 60, 255, 0)
             im2, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
             max_contour = None
@@ -125,7 +138,7 @@ def scan():
                 cv2.drawContours(frame, [max_contour], 0, (0, 255, 0), 3)
                 cv2.ellipse(frame, shape, (0, 255, 255), 2, 8)
                 point = int(shape[0][0]), int(shape[0][1])
-                if len(trajectory[trajectory_index]) == 50:
+                if len(trajectory[trajectory_index]) == num_data_points:
                     trajectory[trajectory_index] = trajectory[trajectory_index][1:] + [point]
                 else:
                     trajectory[trajectory_index].append(point)
@@ -142,6 +155,7 @@ def scan():
         cv2.imshow("default", frame)
         fps.update()
 
+        # If "c" is pressed, enter calibration sequence
         if key == 99:
             colorcal = {}
             cv2.setTrackbarPos('H Upper', 'tool', defaultcal[color[len(colorcal)]][0][0])
@@ -194,6 +208,11 @@ def scan():
                 # quit on escape key.
                 if key == 27:
                     break
+            # saves the calibration to a file
+            file = open(calibrationfile, "wb")
+            pickle.dump(defaultcal, file)
+            file.close()
+            print("file saved")
 
     fps.stop()
     print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
