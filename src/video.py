@@ -13,6 +13,8 @@ try:
     from imutils.video import WebcamVideoStream
     from imutils.video import FPS
     from colordetection import ColorDetector
+    import os
+    import pickle
 except ImportError as err:
     Die(err)
 
@@ -28,6 +30,7 @@ Initialize the camera here
 cam_port = 0
 cam = WebcamVideoStream(src=cam_port).start()
 fps = FPS().start()
+calibrationfile = "calibration.txt"
 
 
 def empty_callback(x):
@@ -50,11 +53,22 @@ def scan():
     :returns: dictionary
     """
 
-    defaultcal = {  # default color calibration
-        'ball1': [[179, 255, 255], [154, 99, 135]],
-        'ball2': [[138, 255, 255], [72, 23, 142]],
-        'ball3': [[18, 255, 255], [0, 108, 186]]
-    }
+    # Read the calibration values from file
+    defaultcal = {}
+    if os.path.exists(calibrationfile):
+        file = open(calibrationfile, "r")
+        defaultcal = pickle.load(file)
+        file.close()
+    # If no calibration file exists, create it and use the default values
+    else:
+        defaultcal = {  # default color calibration
+            'ball1': [[179, 255, 255], [154, 99, 135]],
+            'ball2': [[138, 255, 255], [72, 23, 142]],
+            'ball3': [[18, 255, 255], [0, 108, 186]]
+        }
+        file = open(calibrationfile, "w")
+        pickle.dump(defaultcal, file)
+        file.close()
 
     colorcal = {}  # color calibration dictionary
     color = ['ball1', 'ball2', 'ball3']  # list of valid colors
@@ -136,10 +150,19 @@ def scan():
                              (255, 255, 255),
                              3)
 
+        # If "s" is pressed, save the current calibration values to file
+        if key == 115:
+            file = open(calibrationfile, "w")
+            pickle.dump(defaultcal, file)
+            file.close()
+            print("file saved")
+
+
         # show result
         cv2.imshow("default", frame)
         fps.update()
 
+        # If "c" is pressed, enter calibration sequence
         if key == 99:
             colorcal = {}
             cv2.setTrackbarPos('H Upper', 'tool', defaultcal[color[len(colorcal)]][0][0])
