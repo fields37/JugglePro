@@ -51,9 +51,9 @@ def scan():
     """
 
     defaultcal = {  # default color calibration
-        'ball1': [[179, 255, 255], [154, 99, 135]],
-        'ball2': [[138, 255, 255], [72, 23, 142]],
-        'ball3': [[18, 255, 255], [0, 108, 186]]
+        'ball1': [[175, 230, 255], [155, 130, 100]],
+        'ball2': [[102, 255, 255], [94, 75, 130]],
+        'ball3': [[94, 255, 254], [75, 135, 0]]
     }
 
     colorcal = {}  # color calibration dictionary
@@ -70,7 +70,7 @@ def scan():
     cv2.createTrackbar('V Lower', "tool", defaultcal[color[len(colorcal)]][1][2], 255, empty_callback)
 
     cv2.createTrackbar('Max Ball Size', "tool", 2000, 2000, empty_callback)
-    cv2.createTrackbar('Min Ball Size', "tool", 500, 2000, empty_callback)
+    cv2.createTrackbar('Min Ball Size', "tool", 120, 2000, empty_callback)
 
     # Remember that the range for S and V are not 0 to 179
     # make four more trackbars for ('S Upper', 'S Lower', 'V Upper', 'V Lower')
@@ -80,6 +80,8 @@ def scan():
 
     while True:
         frame = cam.read()
+        while frame is None:
+            pass
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)  # generates an hsv version of frame and
         # stores it in the hsv image variable
         key = cv2.waitKey(1) & 0xff
