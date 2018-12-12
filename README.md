@@ -20,6 +20,6 @@ You will need the JugglePro system (hardware) and a laptop with a webcamera, Pyt
   a) You will then be prompted three times to calibrate the color of each juggling ball where you slide the sliders on the 'tool' window.
   b) To properly calibrate, make sure that only the ball you are calibrating is being detected and no other ball is being detected.
   c) Press the spacebar to advance to the next ball color, press 'S' to save the calibration for future runs of the program, and press 'ESC' to exit the calibration prematurely.
-4) Now that the system is fully plugged in and calibrated, you can put on the gloves and start tossing balls around and feel the adaptive vibrations of JugglePro!
+4) Now that the system is fully plugged in and calibrated, you can put on the gloves and start tossing balls around and feel the adaptive vibrations of JugglePro! To exit the system, simply press the 'ESC' key.
 
 Note: You do not need to follow the instructions displayed onscreen, but we suggest that you challenge yourself to get better.
